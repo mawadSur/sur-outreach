@@ -1,0 +1,75 @@
+# Sur Consulting — OpenOutreach deployment
+# Grounded in OpenOutreach main + linkedin-agent-cli 0.1.9 SOURCE (verified, not docs/marketing).
+#
+# PILOT = ONE real, aged, US-established account (your-account), run from a US host. UAE is DEFERRED to a
+# second dedicated account later (see the commented oo-uae block + ops/phase0-checklist.md §12).
+#
+# HARD FACTS this file is built on (all source-verified):
+#   - Image: ghcr.io/eracle/openoutreach:latest  (pre-built, published on push to main)
+#   - VNC viewer requires BOTH published ports AND `ENABLE_VNC=true` (Xvfb+x11vnc+noVNC start only then).
+#     noVNC is your ONLY path to clear a LinkedIn checkpoint by hand — never run without it.
+#   - The app opens /app/data/db.sqlite3 — mount a host DIR (not the file) at /app/data (uid-1000 writable).
+#   - One LinkedInProfile == one logged-in Playwright session == one container. DO NOT multiplex.
+#   - LLM config from env: LLM_API_KEY, AI_MODEL, LLM_API_BASE (one model: qualify + follow-up + search).
+#   - 🔴 NO PROXY SUPPORT. The code never reads HTTP_PROXY/HTTPS_PROXY and launches Playwright with no
+#     proxy= arg (linkedin_cli/browser/login.py). Setting those env vars does NOTHING. Egress = the host's
+#     network. A US account on a US host already egresses from a US IP — correct, no proxy needed.
+#     To geo-locate a DIFFERENT country (e.g. UAE) you must run that container on a host IN that country
+#     (VPS) or route the whole host through a VPN — NOT via an app env var.
+#   - SESSION via cookies: paste the account's Playwright storage_state JSON into LinkedInProfile.cookie_data
+#     (Django Admin) BEFORE first browser launch → the daemon goes straight to /feed and NEVER types the
+#     password. Empty cookie_data => forced automated password login = highest checkpoint risk. (See §1, §4.)
+#   - TZ: set it (env file) so (a) the daemon's 9am-7pm active-hours window runs in the account's local US
+#     time and (b) the browser reports a US timezone instead of the image default UTC.
+#
+# Usage:
+#   cp env/us.env.example env/us.env && edit       # LLM key, AI_MODEL, TZ, HOST_UID/GID
+#   mkdir -p ${HOME}/.openoutreach/us-data         # uid-1000 writable
+#   docker compose up oo-us                         # FIRST run: onboarding (prompt mounts commented out below)
+#   open http://localhost:6080/vnc.html            # watch the browser / clear any checkpoint
+#   docker compose up -d oo-us                      # steady state (after cookie import + prompts enabled)
+
+services:
+  oo-us:
+    image: ghcr.io/eracle/openoutreach:latest
+    pull_policy: always
+    container_name: oo-us
+    env_file:
+      - ./env/us.env
+    environment:
+      ENABLE_VNC: "true"
+    ports:
+      - "6080:6080"   # noVNC web viewer -> http://localhost:6080/vnc.html
+      - "5900:5900"   # native VNC
+    volumes:
+      # Host dir holding db.sqlite3 (incl. cookie_data session), GP model, embeddings, labels, pipeline.
+      # Back this up — it is a single point of failure. Must be writable by uid 1000.
+      - ${HOME}/.openoutreach/us-data:/app/data
+      # Custom prompt overrides (mounted read-only over the in-image templates).
+      # 👉 COMMENT OUT the next two lines for the very FIRST run / onboarding, then re-enable and restart.
+      - ./prompts/follow_up_agent.us.j2:/app/openoutreach/core/templates/prompts/follow_up_agent.j2:ro
+      - ./prompts/qualify_lead.j2:/app/openoutreach/core/templates/prompts/qualify_lead.j2:ro
+    restart: unless-stopped
+
+# ---------------------------------------------------------------------------------------------------
+# DEFERRED — UAE second account. Do NOT uncomment until you have (a) a second dedicated account and
+# (b) a UAE egress path. ⚠️ The env-proxy trick does NOT work (code ignores HTTP_PROXY). To make this
+# container egress from a UAE IP you must run it on a UAE-located VPS, or route the host through a UAE
+# VPN. Then give it its own data dir + ports. Template:
+#
+#   oo-uae:
+#     image: ghcr.io/eracle/openoutreach:latest
+#     pull_policy: always
+#     container_name: oo-uae
+#     env_file:
+#       - ./env/uae.env            # TZ=Asia/Dubai; LLM vars; HOST_UID/GID
+#     environment:
+#       ENABLE_VNC: "true"
+#     ports:
+#       - "6081:6080"              # noVNC -> http://localhost:6081/vnc.html
+#       - "5901:5900"
+#     volumes:
+#       - ${HOME}/.openoutreach/uae-data:/app/data
+#       - ./prompts/follow_up_agent.uae.j2:/app/openoutreach/core/templates/prompts/follow_up_agent.j2:ro
+#       - ./prompts/qualify_lead.j2:/app/openoutreach/core/templates/prompts/qualify_lead.j2:ro
+#     restart: unless-stopped

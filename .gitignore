@@ -1,0 +1,21 @@
+# Secrets — never commit real env files (LLM keys)
+env/*.env
+!env/*.env.example
+
+# 🔴 LinkedIn session blobs — these ARE the live login (li_at cookie). NEVER commit.
+linkedin-state.json
+*state*.json
+*.cookies.json
+
+# Any local data dumps / backups
+*.sqlite3
+*.sqlite3.bak
+data/
+
+# Python
+__pycache__/
+*.pyc
+
+# ruflo telemetry that landed in this dir — leaks local paths, not part of the deliverable
+.claude-flow/
+.swarm/
