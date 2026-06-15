@@ -56,7 +56,8 @@ outreach/
 │  └─ templates.md             manual connection notes + email-leg (CAN-SPAM) templates
 └─ ops/
    ├─ phase0-checklist.md      ⭐ the runbook — do this in order
-   └─ kpi-tracker.md           funnel math + weekly log
+   ├─ kpi-tracker.md           funnel math + weekly log
+   └─ STATUS.md                project status + host-setup tracker ("what's left to set up")
 ```
 
 ## Ground-truth notes (source-verified corrections vs. generic lore)
