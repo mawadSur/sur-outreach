@@ -13,6 +13,29 @@ account (`your-account`)** run from a US host; **UAE is deferred** to a second d
   single highest-leverage safety move. See `ops/phase0-checklist.md` §1–§4.
 - Win on **targeting quality + the paid-assessment gate**, not raw volume. One account ≈ ~75 invites/wk.
 
+## 🚀 START HERE
+On a fresh machine, clone and run these in order:
+```bash
+git clone https://github.com/mawadSur/sur-outreach.git && cd sur-outreach
+
+# 1) Capture the account's logged-in session (do this in the env that account normally uses)
+pip install playwright && python -m playwright install chromium
+python -m playwright open --save-storage=linkedin-state.json https://www.linkedin.com/feed/
+#    ^ log into the account by hand, click around ~30s, then close the window
+
+# 2) Validate the session BEFORE importing it — must print ✅ PASS
+python3 scripts/validate_session.py linkedin-state.json
+
+# 3) Configure + first run (onboarding). Set TZ to the account's US zone; NO proxy.
+cp env/us.env.example env/us.env     # edit: LLM_API_KEY, AI_MODEL, TZ, HOST_UID/GID
+mkdir -p ~/.openoutreach/us-data
+#    first run only: comment out the 2 prompt-mount lines for oo-us (see checklist §2)
+docker compose up oo-us
+```
+Then follow **`ops/phase0-checklist.md` §3+**: paste `linkedin-state.json` into `LinkedInProfile.cookie_data`
+in Django Admin → re-enable the prompt mounts → `docker compose up -d oo-us` → watch
+`http://localhost:6080/vnc.html` (it must land on **/feed with no login form**).
+
 ## Files
 ```
 outreach/
@@ -35,15 +58,6 @@ outreach/
    ├─ phase0-checklist.md      ⭐ the runbook — do this in order
    └─ kpi-tracker.md           funnel math + weekly log
 ```
-
-## Quick start
-1. Work through **`ops/phase0-checklist.md`** top to bottom (account+host → capture cookies → deploy →
-   import cookies → verify → Admin settings → prompts+seeds → ramp → compliance).
-2. Capture cookies: `python -m playwright open --save-storage=linkedin-state.json https://www.linkedin.com/feed/`,
-   log in by hand, close.
-3. `cd outreach && docker compose up oo-us` (first run = onboarding; prompt mounts commented out).
-4. Paste `linkedin-state.json` into LinkedInProfile.cookie_data in Django Admin → re-enable prompts →
-   `docker compose up -d oo-us`. Watch live: `http://localhost:6080/vnc.html` (must land on /feed, no login form).
 
 ## Ground-truth notes (source-verified corrections vs. generic lore)
 - **🔴 NO proxy support.** The code never reads `HTTP_PROXY`/`HTTPS_PROXY` — egress = the host network. A US
