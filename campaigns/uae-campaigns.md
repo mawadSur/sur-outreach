@@ -33,7 +33,7 @@ they handle high-volume manual work today and where the friction is. Move slowly
 conversation about priorities. Patience and respect come first; never pitch cold and never discuss price in chat.
 ```
 
-**booking_link**: `https://calendly.com/REPLACE_ME/conversation`
+**booking_link**: `https://calendly.com/mawad2/15-min`
 
 ---
 
@@ -55,7 +55,7 @@ any data-residency constraints. Move toward a short conversation when a concrete
 no cold pitch, no price in chat.
 ```
 
-**booking_link**: `https://calendly.com/REPLACE_ME/conversation`
+**booking_link**: `https://calendly.com/mawad2/15-min`
 
 ---
 
@@ -78,4 +78,4 @@ referral-driven motion: lead with genuine interest and value, build trust over t
 conversation emerge naturally. Never pitch; never discuss commercials in chat.
 ```
 
-**booking_link**: `https://calendly.com/REPLACE_ME/conversation`
+**booking_link**: `https://calendly.com/mawad2/15-min`

@@ -1,8 +1,10 @@
 # Sur Consulting — OpenOutreach deployment
 # Grounded in OpenOutreach main + linkedin-agent-cli 0.1.9 SOURCE (verified, not docs/marketing).
 #
-# PILOT = ONE real, aged, US-established account (your-account), run from a US host. UAE is DEFERRED to a
-# second dedicated account later (see the commented oo-uae block + ops/phase0-checklist.md §12).
+# TWO accounts: oo-us (active, runs from a US host) + oo-uae (defined, but GATED behind the `uae` compose
+# profile so it never starts by accident). 🔴 oo-uae MUST run from a UAE egress (UAE VPS or host VPN) — a
+# UAE account logging in from a US IP is a ban trigger. A plain `docker compose up` starts ONLY oo-us; bring
+# UAE up explicitly with `docker compose --profile uae up -d oo-uae` and ONLY once egress is AE (checklist §12).
 #
 # HARD FACTS this file is built on (all source-verified):
 #   - Image: ghcr.io/eracle/openoutreach:latest  (pre-built, published on push to main)
@@ -28,6 +30,10 @@
 #   docker compose up oo-us                         # FIRST run: onboarding (prompt mounts commented out below)
 #   open http://localhost:6080/vnc.html            # watch the browser / clear any checkpoint
 #   docker compose up -d oo-us                      # steady state (after cookie import + prompts enabled)
+#   # --- UAE: ONLY from a UAE egress (VPS/VPN). Gated by the `uae` profile, so a plain `up` skips it. ---
+#   docker compose --profile uae up oo-uae          # FIRST run onboarding (comment out uae prompt mounts first)
+#   open http://localhost:6081/vnc.html            # UAE noVNC viewer
+#   docker compose --profile uae up -d oo-uae       # steady state
 
 services:
   oo-us:
@@ -51,25 +57,26 @@ services:
       - ./prompts/qualify_lead.j2:/app/openoutreach/core/templates/prompts/qualify_lead.j2:ro
     restart: unless-stopped
 
-# ---------------------------------------------------------------------------------------------------
-# DEFERRED — UAE second account. Do NOT uncomment until you have (a) a second dedicated account and
-# (b) a UAE egress path. ⚠️ The env-proxy trick does NOT work (code ignores HTTP_PROXY). To make this
-# container egress from a UAE IP you must run it on a UAE-located VPS, or route the host through a UAE
-# VPN. Then give it its own data dir + ports. Template:
-#
-#   oo-uae:
-#     image: ghcr.io/eracle/openoutreach:latest
-#     pull_policy: always
-#     container_name: oo-uae
-#     env_file:
-#       - ./env/uae.env            # TZ=Asia/Dubai; LLM vars; HOST_UID/GID
-#     environment:
-#       ENABLE_VNC: "true"
-#     ports:
-#       - "6081:6080"              # noVNC -> http://localhost:6081/vnc.html
-#       - "5901:5900"
-#     volumes:
-#       - ${HOME}/.openoutreach/uae-data:/app/data
-#       - ./prompts/follow_up_agent.uae.j2:/app/openoutreach/core/templates/prompts/follow_up_agent.j2:ro
-#       - ./prompts/qualify_lead.j2:/app/openoutreach/core/templates/prompts/qualify_lead.j2:ro
-#     restart: unless-stopped
+  # ---------------------------------------------------------------------------------------------------
+  # UAE second account — DEFINED but GATED behind the `uae` profile so `docker compose up` never starts it
+  # from the US host. ⚠️ The env-proxy trick does NOT work (code ignores HTTP_PROXY). This container egresses
+  # from the HOST network, so it MUST run on a UAE-located VPS or a host routed through a UAE VPN. Verify
+  # BEFORE first login:  docker exec oo-uae sh -lc 'curl -s https://ipinfo.io/json'   (country MUST be AE).
+  oo-uae:
+    image: ghcr.io/eracle/openoutreach:latest
+    pull_policy: always
+    container_name: oo-uae
+    profiles: ["uae"]            # excluded from a plain `docker compose up`; start with `--profile uae`
+    env_file:
+      - ./env/uae.env            # TZ=Asia/Dubai; LLM vars; HOST_UID/GID
+    environment:
+      ENABLE_VNC: "true"
+    ports:
+      - "6081:6080"              # noVNC -> http://localhost:6081/vnc.html
+      - "5901:5900"
+    volumes:
+      - ${HOME}/.openoutreach/uae-data:/app/data
+      # 👉 COMMENT OUT the next two lines for the very FIRST run / onboarding, then re-enable and restart.
+      - ./prompts/follow_up_agent.uae.j2:/app/openoutreach/core/templates/prompts/follow_up_agent.j2:ro
+      - ./prompts/qualify_lead.j2:/app/openoutreach/core/templates/prompts/qualify_lead.j2:ro
+    restart: unless-stopped

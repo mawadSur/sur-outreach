@@ -34,7 +34,7 @@ When a real, costly problem surfaces in their own words, move toward a free 20-m
 the findings). Do not pitch features cold; lead with curiosity and one useful insight.
 ```
 
-**booking_link**: `https://calendly.com/REPLACE_ME/20min`
+**booking_link**: `https://calendly.com/mawad2/15-min`
 
 ---
 
@@ -58,7 +58,7 @@ surfaces, move toward a short call to scope an advisory engagement. Relationship
 never hard-sell.
 ```
 
-**booking_link**: `https://calendly.com/REPLACE_ME/20min`
+**booking_link**: `https://calendly.com/mawad2/15-min`
 
 ---
 
@@ -80,4 +80,4 @@ modernization they've attempted. When a concrete migration or cost problem surfa
 call. Lead with a specific, useful observation, not a pitch.
 ```
 
-**booking_link**: `https://calendly.com/REPLACE_ME/20min`
+**booking_link**: `https://calendly.com/mawad2/15-min`

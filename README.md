@@ -1,7 +1,8 @@
 # Sur Consulting — LinkedIn Outbound (OpenOutreach) — Phase 0 Assets
 
-OpenOutreach deployment for Sur Consulting's outbound engine. **Pilot = ONE real, aged, US-established
-account (`your-account`)** run from a US host; **UAE is deferred** to a second dedicated account later.
+OpenOutreach deployment for Sur Consulting's outbound engine. **Two accounts:** one **US** (`oo-us`, run
+from a US host) + one **UAE** (`oo-uae`, wired but **gated** behind the `uae` compose profile — it must run
+from a UAE egress, never the US host). Both are spare/brand accounts, not a primary personal profile.
 **Front-door offer: AI Automation & Internal Tools.** Built and grounded against
 [OpenOutreach `main`](https://github.com/eracle/OpenOutreach) + linkedin-agent-cli 0.1.9 source.
 
@@ -39,7 +40,7 @@ in Django Admin → re-enable the prompt mounts → `docker compose up -d oo-us`
 ## Files
 ```
 outreach/
-├─ docker-compose.yml          oo-us active (:6080); oo-uae DEFERRED (commented, needs UAE-host egress)
+├─ docker-compose.yml          oo-us active (:6080); oo-uae wired but gated (--profile uae, :6081, needs UAE egress)
 ├─ env/
 │  ├─ us.env.example           US LLM + TZ + HOST_UID/GID (NO proxy — copy → us.env, never commit)
 │  └─ uae.env.example          DEFERRED UAE template (egress via UAE VPS/VPN, not env proxy)

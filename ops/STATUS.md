@@ -1,16 +1,19 @@
 # Project Status & Host-Setup Tracker
 
-_Last updated: 2026-06-15_
+_Last updated: 2026-06-30_
 
 ## Where things stand
 - **Repo:** https://github.com/mawadSur/sur-outreach (public, scrubbed). All Phase 0 assets built and
   grounded in OpenOutreach + linkedin-agent-cli source. **Nothing is running yet.**
 - **Decisions locked:**
-  - One **real, aged, US-established** account (spare/brand — NOT the primary personal profile).
-  - **US market first**; UAE deferred to a second dedicated account later.
+  - **TWO accounts:** one **US** (`oo-us`, active) + one **UAE** (`oo-uae`, wired but gated). Both
+    spare/brand accounts — NOT a primary personal profile.
   - Attach via **imported session cookies** (tool never types the password).
-  - Run from a **US host with NO proxy**; set **`TZ`** to the account's US zone.
-  - One account ≈ ~75 invites/wk → this pilot **validates conversion, not full volume**.
+  - **LLM = `claude-sonnet-4-6`** for both (qualify + follow-up + search; ~5× cheaper than Opus).
+  - **NO proxy support** → egress = the host network. `oo-us` runs from a US host; **`oo-uae` MUST run
+    from a UAE egress (UAE VPS or host VPN)** — it's gated behind the `uae` compose profile so a plain
+    `docker compose up` can't launch it from a US IP. Set **`TZ`** per account (US zone / `Asia/Dubai`).
+  - Each account ≈ ~75 invites/wk → still **validates conversion**; two accounts ≈ ~150/wk capacity.
 
 ## Done ✅
 - [x] OpenOutreach assets: docker-compose, env templates, follow-up + qualifier prompts, campaign texts,
@@ -24,14 +27,13 @@ _Last updated: 2026-06-15_
 
 ### 🔴 Blocking — pilot can't run without these
 - [ ] **Docker** installed (Docker Desktop or engine).
-- [ ] **Anthropic API key** in `env/us.env` (`LLM_API_KEY`) + **verify LLM wiring** with a test qualify.
-      ⚠️ Open risk: OpenOutreach uses an OpenAI-compatible client; Anthropic's OpenAI-compat endpoint
-      (`https://api.anthropic.com/v1/`) *should* work, but if it errors, route via an OpenAI-compatible
-      gateway (OpenRouter / LiteLLM) or use an OpenAI key+model.
+- [x] **Anthropic API key** set in `env/us.env` + `env/uae.env` (`LLM_API_KEY`), model `claude-sonnet-4-6`.
+- [ ] **Verify LLM wiring** with a test qualify. ⚠️ Open risk: OpenOutreach uses an OpenAI-compatible
+      client; Anthropic's OpenAI-compat endpoint (`https://api.anthropic.com/v1/`) *should* work, but if it
+      errors, route via an OpenAI-compatible gateway (OpenRouter / LiteLLM) or use an OpenAI key+model.
 - [ ] **Session cookies** captured + validator prints ✅ PASS (README "START HERE" §1–2).
 - [ ] **Account profile ready** — healthy (no pending checkpoint), real photo, Sur-aligned headline/bio.
-- [ ] **Real booking link** — replace `https://calendly.com/REPLACE_ME/...` in `campaigns/*.md` with a live
-      Calendly / Cal.com event (rung 3 of the CTA ladder).
+- [x] **Real booking link** — `https://calendly.com/mawad2/15-min` set in all US + UAE `campaigns/*.md`.
 - [ ] **`self_name` + `contact_email`** set during onboarding / Django Admin (name shown in DMs + reply email).
 - [ ] **Cold-start seed labels** — 15–20 good-fit + 5–10 bad-fit example profiles per campaign (the GP
       qualifier can't learn with < 2 labels).
@@ -45,9 +47,13 @@ _Last updated: 2026-06-15_
 - [ ] **CAN-SPAM**: real physical postal address + one-click unsubscribe + suppression list.
 - [ ] Sending domain / email infra (SPF/DKIM) if email goes beyond the manual leg.
 
-### ⏸️ Deferred — UAE (not part of the US pilot)
-- [ ] Second dedicated account + real UAE egress (UAE VPS or host VPN — env proxy does NOT work) + legal pass
-      (PDPL Decree-Law 45/2021 + Cabinet Decision 56/2024).
+### 🌍 UAE account (`oo-uae`) — wired, gated on egress
+Service is defined behind the `uae` compose profile. Before `docker compose --profile uae up oo-uae`:
+- [ ] **Real UAE egress** — UAE VPS (recommended) or host VPN. Env proxy does NOT work. Verify country=AE:
+      `docker exec oo-uae sh -lc 'curl -s https://ipinfo.io/json'`.
+- [ ] **UAE account session cookies** captured + validator ✅ PASS (separate from the US account).
+- [ ] **UAE legal pass** — PDPL Decree-Law 45/2021 + Cabinet Decision 56/2024.
+- [ ] `mkdir -p ~/.openoutreach/uae-data`; on first run comment out the 2 `oo-uae` prompt mounts.
 
 ## Next action
 Run the README **"START HERE"** block on the host. **Gate before the daemon does any real work:**
